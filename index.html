@@ -364,9 +364,18 @@ function today() { return new Date().toISOString().split('T')[0]; }
 
 function formatDate(s) {
   if (!s) return '—';
-  const [y,m,d] = String(s).split('-');
+  // Toma solo los primeros 10 caracteres para manejar "2026-06-02" y "2026-06-02T06:00:00.000Z"
+  const datePart = String(s).substring(0, 10);
+  const [y, m, d] = datePart.split('-');
   const mo = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-  return `${d} ${mo[parseInt(m)-1]} ${y}`;
+  return `${parseInt(d)} ${mo[parseInt(m)-1]} ${y}`;
+}
+
+function formatTime(s) {
+  if (!s) return '';
+  const d = new Date(s);
+  if (isNaN(d.getTime())) return '';
+  return d.toLocaleTimeString('es-MX', {hour: '2-digit', minute: '2-digit'});
 }
 
 function monthLabel(s) {
@@ -474,8 +483,9 @@ function buildCard(r) {
   const bc = r.estado==='completado'?'completado':'pendiente';
   const bt = r.estado==='completado'?'● Completado':'● Pendiente';
   const id = esc(r.id);
+  const hora = r.creado ? `<span style="font-size:10px;color:var(--muted)"> · ${formatTime(r.creado)}</span>` : '';
   return `<div class="record-card" onclick="openDetail('${id}')">
-    <div class="rc-top"><span class="cliente">${esc(r.cliente)}</span><span class="fecha">${formatDate(r.fecha)}</span></div>
+    <div class="rc-top"><span class="cliente">${esc(r.cliente)}</span><span class="fecha">${formatDate(r.fecha)}${hora}</span></div>
     ${modulo?`<div class="modulo">🔩 ${esc(modulo)}</div>`:''}
     <div class="piezas">
       <div class="pieza-box prestada"><div class="pb-label">📤 Prestada</div><div class="pb-val">${esc(r.prestada)}</div></div>
